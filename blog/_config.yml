@@ -3,7 +3,7 @@
 #
 
 # Name of your site (displayed in the header)
-name: ThirdKey.ai Research
+name: ThirdKey Research
 
 # Name of the author
 author: ThirdKey
@@ -35,6 +35,7 @@ footer-links:
   googleplus: # anything in your profile username that comes after plus.google.com/
   playconsole:
   mastodon: # <your-mastodon-instance>/@<your-user-name> eg. fosstodon.org/@username
+  huggingface: thirdkey
 
 # Enter your Disqus shortname (not your username) to enable commenting on posts
 # You can find your shortname on the Settings page of your Disqus account
@@ -87,6 +88,7 @@ plugins:
   - jekyll-feed # Create an Atom feed using the official Jekyll feed gem
   - jekyll-seo-tag
   - jekyll-paginate
+  - jekyll-spaceship
 
 include: ['_pages']
 
