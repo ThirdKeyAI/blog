@@ -37,7 +37,7 @@ SchemaPin implements a robust key pinning mechanism that:
 
 ## How SchemaPin Works
 
-```mermaid
+```mermaid!
 flowchart TD
     A[Tool Developer] -->|Publishes| B["/.well-known/schemapin.json<br/>(Public Key + Revoked Keys)"]
     A -->|Signs| C["Tool Schema + Signature"]
