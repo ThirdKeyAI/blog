@@ -1,13 +1,28 @@
-_site
+# Jekyll build files
+blog/_site/
+blog/.sass-cache/
+blog/.jekyll-cache/
+blog/.jekyll-metadata
+
+# Dependencies
+blog/vendor/
+blog/Gemfile.lock
+
+# OS generated files
 .DS_Store
-.jekyll
-.jekyll-metadata
-.bundle
-.sass-cache
-Gemfile.lock
-node_modules
-package.json
-*.gem
-*.gemspec
-.jekyll-cache
-vendor
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Logs
+*.log
