@@ -80,6 +80,7 @@ Our current research spans several critical domains:
 - **Email**: research@thirdkey.ai
 - **GitHub**: [ThirdKeyAI](https://github.com/ThirdKeyAI)
 - **Twitter**: [@ThirdKeyAI](https://twitter.com/ThirdKeyAI)
+- **Hugging Face**: [thirdkey](https://huggingface.co/thirdkey)
 
 ---
 
