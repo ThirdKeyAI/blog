@@ -20,7 +20,7 @@ Traditional security tools, like Data Loss Prevention (DLP) systems, are trained
 
 The core idea is a sophisticated form of steganography, the art of hiding messages in plain sight. But unlike traditional methods that flip the least significant bits in an image pixel, VectorSmuggle uses techniques tailored for the floating-point, high-dimensional nature of embeddings.
 
-The research paper outlines several methods:
+The research outlines several methods:
 
 1.  **Rotation:** The vector (our point on the map) is slightly rotated. The precise angle and axis of this tiny rotation encode the hidden data.
 2.  **Scaling:** The vector is made fractionally longer or shorter. The exact scaling factor is used to represent the secret information.
@@ -41,7 +41,7 @@ By leveraging this position, the attacker can:
 
 ### A Tool for Research and Defense
 
-The VectorSmuggle project isn't just a paper; it's a comprehensive, open-source framework built for security professionals. By demonstrating a viable attack, it provides red teams with a new vector to test and blue teams with a clear mandate to build new defenses.
+The VectorSmuggle project isn't just an upcoming paper; it's a comprehensive, open-source framework built for security professionals. By demonstrating a viable attack, it provides red teams with a new vector to test and blue teams with a clear mandate to build new defenses.
 
 The research shows this technique is not just theoretical. It achieves a significant data-hiding capacity and, crucially, an **88% evasion rate** against a standard anomaly detector.
 
