@@ -45,7 +45,7 @@ These attacks focus on the vulnerabilities of Retrieval-Augmented Generation and
 
 * **Index Skew Attacks:** This theoretical attack involves biasing vector database indexing mechanisms to favor the retrieval of malicious content.
 
-## The Importance of Proactive Security Research
+## Proactive Security Research
 
 The work being done by ThirdKey's AgentNull project is a critical component of a proactive cybersecurity strategy. By identifying and documenting these vulnerabilities before they are widely exploited, the security community can develop the necessary defenses to protect against them. The detailed PoCs provided in the AgentNull repository are an invaluable tool for researchers, developers, and security professionals who are working to build a more secure AI ecosystem.
 
