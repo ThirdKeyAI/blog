@@ -8,7 +8,6 @@ tags: [AI, safety, security, autonomous agents, Symbiont, AI alignment, cybersec
 excerpt: "Exploring the critical intersection of AI safety and security in an era of autonomous agents, from preventing unintended consequences to defending against malicious attacks."
 ---
 
-# Mind the Bots: Why AI Safety & Security Are the Hottest (and Scariest) Topics in Tech
 
 ## Introduction: AI Everywhere, All at Once
 
