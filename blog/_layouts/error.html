@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>{{ page.title }} – {{ site.name }}</title>
+    {% include meta.html %}
+
+    <link rel="stylesheet" type="text/css" href="{{ site.baseurl }}/assets/style.css" />
+    <meta name="theme-color" content="#0A0A0A">
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ site.baseurl }}/images/favicon-32x32.png">
+    <style>
+      body {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        margin: 0;
+        background: #0A0A0A;
+      }
+
+      .error-page {
+        text-align: center;
+        max-width: 600px;
+        padding: 2rem;
+      }
+
+      .error-code {
+        font-family: 'Roboto Mono', 'SF Mono', 'Fira Code', monospace;
+        font-size: clamp(6rem, 15vw, 10rem);
+        font-weight: 700;
+        letter-spacing: -0.04em;
+        line-height: 1;
+        margin-bottom: 1rem;
+        background: linear-gradient(135deg, #2dd4bf, #38bdf8);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+
+      .error-terminal {
+        background: #111827;
+        border: 1px solid #1f2937;
+        border-radius: 0.75rem;
+        overflow: hidden;
+        margin: 2rem 0;
+        text-align: left;
+      }
+
+      .terminal-bar {
+        background: #1f2937;
+        padding: 0.6rem 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      .terminal-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+      }
+
+      .terminal-dot.red { background: #ef4444; }
+      .terminal-dot.yellow { background: #eab308; }
+      .terminal-dot.green { background: #22c55e; }
+
+      .terminal-title {
+        color: #64748b;
+        font-family: 'Roboto Mono', monospace;
+        font-size: 0.75rem;
+        margin-left: 0.5rem;
+      }
+
+      .terminal-body {
+        padding: 1.25rem 1.5rem;
+        font-family: 'Roboto Mono', 'SF Mono', monospace;
+        font-size: 0.9rem;
+        line-height: 1.8;
+        color: #94a3b8;
+      }
+
+      .terminal-body .prompt {
+        color: #2dd4bf;
+      }
+
+      .terminal-body .cmd {
+        color: #E2E8F0;
+      }
+
+      .terminal-body .error {
+        color: #f87171;
+      }
+
+      .terminal-body .info {
+        color: #64748b;
+      }
+
+      .terminal-body .link {
+        color: #38bdf8;
+      }
+
+      .terminal-body .cursor {
+        display: inline-block;
+        width: 8px;
+        height: 1.1em;
+        background: #2dd4bf;
+        vertical-align: text-bottom;
+        animation: blink 1s step-end infinite;
+      }
+
+      @keyframes blink {
+        50% { opacity: 0; }
+      }
+
+      .error-message {
+        color: #94a3b8;
+        font-size: 1.1rem;
+        line-height: 1.6;
+        margin-bottom: 2rem;
+      }
+
+      .error-links {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        flex-wrap: wrap;
+      }
+
+      .error-links a {
+        padding: 0.6rem 1.5rem;
+        border-radius: 0.5rem;
+        font-size: 0.95rem;
+        font-weight: 500;
+        text-decoration: none;
+        transition: all 0.2s ease;
+      }
+
+      .error-links .primary {
+        background: #2dd4bf;
+        color: #0A0A0A;
+      }
+
+      .error-links .primary:hover {
+        background: #14b8a6;
+      }
+
+      .error-links .secondary {
+        border: 1px solid #374151;
+        color: #94a3b8;
+      }
+
+      .error-links .secondary:hover {
+        border-color: #2dd4bf;
+        color: #2dd4bf;
+      }
+
+      @media (max-width: 480px) {
+        .error-code {
+          font-size: 5rem;
+        }
+
+        .terminal-body {
+          font-size: 0.8rem;
+          padding: 1rem;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="error-page">
+      <div class="error-code">{{ page.error_code | default: "404" }}</div>
+
+      <div class="error-terminal">
+        <div class="terminal-bar">
+          <div class="terminal-dot red"></div>
+          <div class="terminal-dot yellow"></div>
+          <div class="terminal-dot green"></div>
+          <span class="terminal-title">agentpin verify</span>
+        </div>
+        <div class="terminal-body">
+          <div><span class="prompt">$</span> <span class="cmd">agentpin verify --credential /{{ page.permalink | remove: "/" }}</span></div>
+          <div><span class="error">error:</span> {{ page.terminal_error | default: "resource not found in discovery document" }}</div>
+          <div><span class="info">hint:</span> the requested path could not be verified</div>
+          <div><span class="info">try:</span> <a href="{{ site.baseurl }}/" class="link">{{ site.url }}{{ site.baseurl }}/</a></div>
+          <div><span class="prompt">$</span> <span class="cursor"></span></div>
+        </div>
+      </div>
+
+      <p class="error-message">{{ content }}</p>
+
+      <div class="error-links">
+        <a href="{{ site.baseurl }}/" class="primary">Back to Home</a>
+        <a href="{{ site.baseurl }}/search" class="secondary">Search Posts</a>
+      </div>
+    </div>
+  </body>
+</html>

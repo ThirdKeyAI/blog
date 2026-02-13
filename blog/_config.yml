@@ -92,6 +92,15 @@ plugins:
 
 include: ['_pages']
 
+# Jekyll Spaceship - mermaid dark theme
+jekyll-spaceship:
+  mermaid-processor:
+    mode: pre-fetch
+    css:
+      class: mermaid
+    config:
+      theme: dark
+
 paginate: 6
 paginate_path: /page:num/
 

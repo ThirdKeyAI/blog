@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
   <head>
     <title>{% if page.title %}{{ page.title }} – {% endif %}{{ site.name }} – {{ site.description }}</title>
     {% seo title=false %}
@@ -7,15 +7,13 @@
 
     <link rel="stylesheet" type="text/css" href="{{ site.baseurl }}/assets/style.css" />
     <link rel="alternate" type="application/rss+xml" title="{{ site.name }} - {{ site.description }}" href="{{ site.baseurl }}/feed.xml" />
-    
 
-    <meta name="theme-color" content="#000000">
+    <meta name="theme-color" content="#0A0A0A">
     <link rel="icon" type="image/png" sizes="32x32" href="{{ site.baseurl }}/images/favicon-32x32.png">
     {% include analytics_head.html %}
   </head>
 
   <body>
-    <div id="bar"></div>
     <div class="wrapper-container">
       <div class="wrapper-masthead">
         <div class="container">
@@ -24,7 +22,7 @@
 
             <div class="site-info">
               <h1 class="site-name"><a href="{{ site.baseurl }}/">{{ site.name }}</a></h1>
-              <p class="site-description">{{ site.description }}</p> 
+              <p class="site-description">{{ site.description }}</p>
             </div>
 
             <nav>
@@ -45,11 +43,30 @@
       <div class="wrapper-footer">
         <div class="container">
           <footer class="footer">
-            {% include svg-icons.html %}
+            <div class="footer-links">
+              {% if site.footer-links.email %}<a href="mailto:{{ site.footer-links.email }}">Email</a>{% endif %}
+              {% if site.footer-links.github %}<a href="https://github.com/{{ site.footer-links.github }}" target="_blank">GitHub</a>{% endif %}
+              {% if site.footer-links.twitter %}<a href="https://twitter.com/{{ site.footer-links.twitter }}" target="_blank">Twitter</a>{% endif %}
+              {% if site.footer-links.huggingface %}<a href="https://huggingface.co/{{ site.footer-links.huggingface }}" target="_blank">Hugging Face</a>{% endif %}
+              {% if site.footer-links.linkedin %}<a href="https://www.linkedin.com/in/{{ site.footer-links.linkedin }}" target="_blank">LinkedIn</a>{% endif %}
+              {% if site.footer-links.mastodon %}<a rel="me" href="https://{{ site.footer-links.mastodon }}" target="_blank">Mastodon</a>{% endif %}
+              <a href="{{ site.baseurl }}/feed.xml">RSS</a>
+            </div>
+            <div class="footer-copy">&copy; {{ site.time | date: '%Y' }} {{ site.name }}</div>
           </footer>
         </div>
       </div>
     </div>
+
+    <a href="#" class="back-to-top" id="back-to-top" aria-label="Back to top">&uarr;</a>
+    <script>
+      (function() {
+        var btn = document.getElementById('back-to-top');
+        window.addEventListener('scroll', function() {
+          btn.classList.toggle('visible', window.scrollY > 400);
+        });
+      })();
+    </script>
 
     {% include analytics.html %}
   </body>

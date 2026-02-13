@@ -1,27 +1,50 @@
 
 //
-// VARIABLES
+// VARIABLES — ThirdKey Dark Theme
 //
 
-// Colors
-$blue: #4183C4;
+// Brand
+$teal: #2dd4bf;
+$tealDark: #14b8a6;
+$blue: #38bdf8;
 
-// Grays
-$black: #000;
-$darkerGray: #222;
-$darkGray: #333;
-$gray: #666;
-$lightGray: #eee;
-$white: #fff;
+// Backgrounds
+$bgPrimary: #0A0A0A;
+$bgCard: #111827;
+$bgCardHover: #1a2332;
+$bgCode: #282a36;
+
+// Borders
+$borderColor: #1f2937;
+$borderLight: #374151;
+
+// Text
+$textPrimary: #E2E8F0;
+$textSecondary: #94a3b8;
+$textMuted: #64748b;
+$textHeading: #f1f5f9;
+
+// Legacy compat (used by darcula import)
+$black: #0A0A0A;
+$darkerGray: #f1f5f9;
+$darkGray: #E2E8F0;
+$gray: #94a3b8;
+$lightGray: #1f2937;
+$white: #E2E8F0;
 
 // Font stacks
-$helvetica: Helvetica, Arial, sans-serif;
-$helveticaNeue: "Helvetica Neue", Helvetica, Arial, sans-serif;
-$georgia: Georgia, serif;
+$fontSans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+$fontMono: 'Roboto Mono', 'SF Mono', 'Fira Code', monospace;
 
 // Mobile breakpoints
 @mixin mobile {
   @media screen and (max-width: 640px) {
+    @content;
+  }
+}
+
+@mixin tablet {
+  @media screen and (max-width: 1024px) {
     @content;
   }
 }
