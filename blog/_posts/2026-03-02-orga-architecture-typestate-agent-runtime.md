@@ -113,7 +113,7 @@ Every action the LLM proposes — tool calls, delegations, responses, terminatio
 
 - **Allow**: Action proceeds to dispatch
 - **Deny**: Action is blocked, and the denial reason is fed back to the LLM as an observation
-- **Modify**: Action is rewritten (e.g., parameters redacted) and then dispatched
+- **Modify**: Action is structurally rewritten — the gate returns a new `ProposedAction` that replaces the original in the dispatch queue. This is used for parameter redaction (e.g., stripping sensitive fields before a tool call reaches an external API) while preserving the action's intent.
 
 The denial feedback loop is key. A denied action doesn't crash the agent or terminate the loop. The LLM learns *why* the action was denied and can try a different approach. The agent self-corrects within policy boundaries.
 
@@ -134,6 +134,8 @@ permit(principal, action == Action::"respond", resource);
 // Forbid any agent from calling the delete tool
 forbid(principal, action == Action::"tool_call::delete_production_db", resource);
 ```
+
+Note: Symbiont uses the Cedar policy language directly. If you're using AWS Verified Permissions (which adds its own constraints on top of Cedar), you'll need to scope principal and resource types to satisfy its stricter validation rules.
 
 The gate is never optional. Even with no explicit policy configured, a `DefaultPolicyGate` evaluates every action. The zero-policy case is "allow all" — but it's still *evaluated*, still journaled, still auditable.
 
@@ -160,7 +162,7 @@ pub enum LoopEvent {
 }
 ```
 
-Journal writes happen at phase boundaries — *before* state changes, not after. This means a crashed loop can recover from the last completed phase without re-invoking the LLM. If the agent crashes after `ReasoningComplete` but before `PolicyEvaluated`, the recovery path knows the LLM's proposed actions and can resume from the policy check.
+Journal writes happen immediately after each phase completes, before the next phase begins. This means a crashed loop can recover from the last completed phase without re-invoking the LLM. If the agent crashes after `ReasoningComplete` is persisted but before policy evaluation runs, the recovery path knows the LLM's proposed actions and can resume from the policy check. For tool dispatch specifically, the `DurableJournal` records intent before dispatch and completion after, so side-effectful tools can use idempotency keys to avoid double-execution on recovery.
 
 Two journal backends ship with the runtime:
 
@@ -171,7 +173,7 @@ The journal is also the foundation for observability. Every iteration's token us
 
 ### 4. Cryptographic Audit
 
-For high-assurance deployments, Symbiont extends journaling with a Merkle-chained, Ed25519-signed audit trail:
+For high-assurance deployments, Symbiont extends journaling with a hash-chained, Ed25519-signed audit trail:
 
 ```rust
 pub struct CriticAuditEntry {
@@ -185,7 +187,7 @@ pub struct CriticAuditEntry {
 }
 ```
 
-Each entry's `chain_hash` is computed from the previous entry's hash concatenated with the current entry's data, then signed with Ed25519. This creates a tamper-evident chain: modifying any entry invalidates all subsequent signatures.
+Each entry's `chain_hash` is computed from the previous entry's hash concatenated with the current entry's data (serialized canonically to avoid encoding ambiguity), then signed with Ed25519. This creates a tamper-evident hash chain: modifying any entry invalidates all subsequent signatures.
 
 Verification recomputes the chain from genesis and checks every signature:
 
@@ -254,7 +256,7 @@ let runner = ReasoningLoopRunner::builder()
 
 ## Why This Combination Matters
 
-Each of these techniques exists independently. Typestate patterns are well-known in Rust. Policy engines are commodity. Append-only logs are everywhere. Merkle chains are blockchain 101.
+Each of these techniques exists independently. Typestate patterns are well-known in Rust. Policy engines are commodity. Append-only logs are everywhere. Hash chains are textbook cryptography.
 
 The novelty is combining them into a single agent runtime primitive where:
 
@@ -263,7 +265,9 @@ The novelty is combining them into a single agent runtime primitive where:
 - **Every transition is journaled**: Crash recovery without LLM re-invocation
 - **The journal is cryptographically chained**: Tamper-evident proof of agent behavior
 
-No existing agent framework provides all four. Most provide zero or one. The result is a runtime where "the agent did X without authorization" is not a failure mode — it's a type error.
+No existing agent framework provides all four. Most provide zero or one. The result is a runtime where "the agent did X without authorization" is not a failure mode — it's a type error, for any code path that goes through the ORGA API.
+
+To be precise: this guarantee covers actions executed via the reasoning loop. Defense-in-depth still applies at the tool boundary — least-privilege credentials, network egress controls, and sandboxing remain important for the external services that tools invoke. ORGA ensures the agent runtime itself cannot skip policy; it doesn't replace infrastructure-level controls on what those tools can reach.
 
 ## Getting Started
 
