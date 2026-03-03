@@ -256,9 +256,9 @@ let runner = ReasoningLoopRunner::builder()
 
 ## Why This Combination Matters
 
-Each of these techniques exists independently. Typestate patterns are well-known in Rust. Policy engines are commodity. Append-only logs are everywhere. Hash chains are textbook cryptography.
+Each of these techniques exists independently. Typestate patterns are well-known in Rust (and have been applied in robotics and concurrent systems). Policy engines are commodity. Append-only logs are everywhere. Hash chains are textbook cryptography.
 
-The novelty is combining them into a single agent runtime primitive where:
+The novelty is combining all four into a single agent runtime primitive where:
 
 - **Phase ordering is compile-time**: You can't write an agent that skips policy
 - **Policy is a phase**: Not middleware, not a hook — a mandatory state transition
@@ -268,6 +268,8 @@ The novelty is combining them into a single agent runtime primitive where:
 No existing agent framework provides all four. Most provide zero or one. The result is a runtime where "the agent did X without authorization" is not a failure mode — it's a type error, for any code path that goes through the ORGA API.
 
 To be precise: this guarantee covers actions executed via the reasoning loop. Defense-in-depth still applies at the tool boundary — least-privilege credentials, network egress controls, and sandboxing remain important for the external services that tools invoke. ORGA ensures the agent runtime itself cannot skip policy; it doesn't replace infrastructure-level controls on what those tools can reach.
+
+There is a cost: every iteration runs a policy evaluation and a journal write, even when the policy is permissive. In practice, these are microsecond-scale operations against the seconds-scale latency of LLM inference, so the overhead is negligible. Cryptographic signing (for the audit chain) is more expensive and is opt-in for deployments that need tamper-evident logs. The runtime also includes per-tool circuit breakers and configurable concurrency limits to handle partial failures without cascading into the rest of the agent fleet.
 
 ## Getting Started
 
