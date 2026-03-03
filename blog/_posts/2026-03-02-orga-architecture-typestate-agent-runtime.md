@@ -51,13 +51,20 @@ ORGA's novelty isn't any single technique — it's combining four mechanisms int
 
 ### 1. Typestate-Enforced Phase Ordering
 
-Each phase of the loop is a zero-sized type marker:
+Each phase of the loop is a zero-sized type marker that implements the `AgentPhase` trait:
 
 ```rust
+pub trait AgentPhase {}
+
 pub struct Reasoning;
 pub struct PolicyCheck;
 pub struct ToolDispatching;
 pub struct Observing;
+
+impl AgentPhase for Reasoning {}
+impl AgentPhase for PolicyCheck {}
+impl AgentPhase for ToolDispatching {}
+impl AgentPhase for Observing {}
 
 pub struct AgentLoop<Phase: AgentPhase> {
     pub state: LoopState,
@@ -206,6 +213,7 @@ The `ReasoningLoopRunner` orchestrates the full cycle:
 
 ```rust
 async fn run_inner(&self, state: LoopState, config: LoopConfig) -> LoopResult {
+    let agent_id = state.agent_id;
     let mut current_loop = AgentLoop::<Reasoning>::new(state, config);
 
     loop {
