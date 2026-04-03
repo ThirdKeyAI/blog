@@ -176,6 +176,41 @@
             text-shadow: 0 0 8px rgba(0, 0, 0, 1);
         }
 
+        .latest-posts {
+            margin-bottom: 2rem;
+        }
+
+        .latest-posts h2 {
+            font-size: clamp(1.2rem, 3vw, 1.5rem);
+            font-weight: 400;
+            color: #e0e0e0;
+            margin-bottom: 0.75rem;
+            text-shadow: 0 0 8px rgba(0, 0, 0, 0.7);
+        }
+
+        .latest-posts ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .latest-posts li {
+            margin-bottom: 0.5rem;
+        }
+
+        .latest-posts a {
+            color: #ffffff;
+            text-decoration: underline;
+            font-size: clamp(0.9rem, 2vw, 1.1rem);
+            transition: all 0.3s ease;
+            text-shadow: 0 0 6px rgba(0, 0, 0, 0.8);
+            font-weight: 500;
+        }
+
+        .latest-posts a:hover {
+            color: #f0f0f0;
+            text-shadow: 0 0 8px rgba(0, 0, 0, 1);
+        }
+
         .contact {
             font-size: clamp(0.9rem, 2vw, 1.1rem);
             color: #c0c0c0;
@@ -319,13 +354,22 @@
             streamline operations, and democratize AI-powered protection.
         </div>
         
+        <div class="latest-posts">
+            <h2>Latest Blog Posts</h2>
+            <ul>
+                <li><a href="/blog/introducing-toolclad-declarative-tool-contracts/">Stop Letting Your Agent Write Shell Commands</a></li>
+                <li><a href="/blog/orga-architecture-typestate-agent-runtime/">ORGA: A Typestate-Enforced Agent Runtime That Makes Policy a Phase, Not a Feature</a></li>
+                <li><a href="/blog/symbiont-v1-4-0-release/">Symbiont v1.4.0 — Persistent Memory, Webhook Verification, and Skill Scanning</a></li>
+            </ul>
+        </div>
+
         <div class="links">
             <span>For more information, please visit our</span>
             <span><a href="/blog">blog</a>,</span>
             <a href="https://thirdkey.ai" target="_blank">solutions</a>
             <span>page, or contact</span>
         </div>
-        
+
         <div class="contact">
             <a href="mailto:info@thirdkey.ai">info@thirdkey.ai</a>
         </div>
