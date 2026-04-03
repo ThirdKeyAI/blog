@@ -8,7 +8,7 @@ tags: [toolclad, ai agents, security, tool contracts, mcp, cedar, symbiont, trus
 
 *Introducing ToolClad: Declarative Tool Interface Contracts for Agentic Runtimes*
 
-**Jascha Wanger | ThirdKey AI Research**
+**Jascha Wanger &mdash; ThirdKey AI Research**
 
 ---
 
