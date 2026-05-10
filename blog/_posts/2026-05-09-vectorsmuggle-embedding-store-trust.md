@@ -30,6 +30,8 @@ The reason is historical. Vector databases were optimized for recommendation and
 
 The paper studies steganographic exfiltration. An attacker with write access to the ingestion pipeline hides payload data inside embeddings while preserving the surface-level retrieval behavior the RAG system exposes to legitimate users. An accomplice with read access to the vector store later decodes the payload.
 
+![VectorSmuggle Threat Model](/blog/images/vectorsmuggle-diagram.png)
+
 We evaluated six families of post-embedding modifications: additive Gaussian noise, orthogonal rotation, magnitude scaling, fixed offset, cross-model fragmentation, and sequential combinations. The threat model is explicit: this is the insider-with-backup-access case, where the attacker can write to ingestion and read backups but cannot directly exfiltrate source documents because those pass through DLP or live in a data room they don't have direct access to.
 
 The honest finding has two parts.
@@ -37,6 +39,14 @@ The honest finding has two parts.
 First, distribution-shifting techniques have a narrow stealth window. Off-the-shelf anomaly detectors (Isolation Forest, One-Class SVM with an RBF kernel) trained on a clean baseline catch every operating point that meaningfully moves the embedding direction. Noise at sigma = 0.005 already preserves cosine similarity at 0.964 but is detectable by One-Class SVM at AUC 0.796. By sigma = 0.01 both detectors reach AUC 1.000. The good news for defenders: the obvious statistical baseline closes most of the cheap-attack regime.
 
 Second, orthogonal rotation is the structural exception in the small-angle, few-rotation regime. Rotation preserves all pairwise inner products and per-dimension marginal moments by construction, which is exactly the feature surface that distribution-based detectors fit on. Across a 35-point parameter sweep, neither detector exceeded AUC 0.53. The result replicates across four additional embedding models (Nomic, EmbeddingGemma, Snowflake Arctic, MXBai) and across two cross-corpus replications totalling over 26,000 chunks (BEIR NFCorpus and a Quora subset). Rotation AUC stays at chance to three decimal places on every (model, corpus) pair we tested.
+
+| Technique                          | Cos to original | IsoForest AUC | OC-SVM AUC |
+| ---------------------------------- | --------------- | ------------- | ---------- |
+| Gaussian noise (sigma = 0.005)     | 0.964           | 0.50          | 0.796      |
+| Gaussian noise (sigma = 0.01)      | 0.929           | 1.000         | 1.000      |
+| Orthogonal rotation (small angle)  | ~1.00           | ~0.50         | ~0.50      |
+| Orthogonal rotation (35-pt sweep)  | varies          | <= 0.53       | <= 0.53    |
+| Adaptive PGD (L2-budgeted)         | > 0.99          | ~0            | ~0         |
 
 There's a third wrinkle worth flagging. Against an adaptive attacker with white-box access to the detector, projected-gradient descent within an L2 budget drives both detector AUCs to near-zero while keeping cosine to original above 0.99. Statistical detection is useful as a first filter against casual attackers. It is not a load-bearing security control against attackers who have read the literature.
 
@@ -72,7 +82,33 @@ The constructive half of the paper is **VectorPin**, a minimal cryptographic pro
 
 The idea is straightforward. When the embedding service produces a vector, it signs a canonical commitment over the source content hash, the model identifier, the vector hash, the dimension and dtype, a timestamp, the key id, and any operator-provided metadata. The signature is Ed25519 over a deterministic byte form of those fields. Verification on read recomputes the relevant hashes and checks the signature. Any post-embedding modification breaks `vec_hash` and triggers a `VECTOR_TAMPERED` outcome.
 
+```mermaid!
+flowchart LR
+    SRC["Source chunk"] --> EMB["Embedding model"]
+    EMB --> VEC["Vector v"]
+    VEC --> SIGN["VectorPin sign<br/>(Ed25519 over canonical bytes)"]
+    SRC -.-> SIGN
+    SIGN --> STORE[("Vector DB<br/>+ pin metadata")]
+    STORE --> READ["Read time"]
+    READ --> VERIFY["VectorPin verify"]
+    VERIFY --> OUT{"Outcome"}
+```
+
 The verifier returns distinct outcomes for distinct failures: `SIGNATURE_INVALID` for forgery, `VECTOR_TAMPERED` for post-pin modification, `SOURCE_MISMATCH` for source drift, `MODEL_MISMATCH` for cross-model substitution, `UNKNOWN_KEY` for unregistered signers. Operators route on these differently. A vector tampering is potential steganography. A model mismatch is potential cross-model fragmentation. A source mismatch may simply be upstream pipeline drift.
+
+```mermaid!
+flowchart TD
+    V["Verifier"] --> Q1{"Signature valid?"}
+    Q1 -- "no" --> O1["SIGNATURE_INVALID<br/>forgery / wrong key"]
+    Q1 -- "key unknown" --> O2["UNKNOWN_KEY<br/>unregistered signer"]
+    Q1 -- "yes" --> Q2{"vec_hash matches?"}
+    Q2 -- "no" --> O3["VECTOR_TAMPERED<br/>potential steganography"]
+    Q2 -- "yes" --> Q3{"src_hash matches?"}
+    Q3 -- "no" --> O4["SOURCE_MISMATCH<br/>upstream drift"]
+    Q3 -- "yes" --> Q4{"model id matches?"}
+    Q4 -- "no" --> O5["MODEL_MISMATCH<br/>cross-model fragmentation"]
+    Q4 -- "yes" --> O6["OK"]
+```
 
 The coverage relative to the studied attacks is structural rather than empirical. Every perturbation technique in the paper modifies the stored vector after the model produced it. Each modification therefore changes `vec_hash` and fails verification. Cross-model fragmentation is caught by the `model` field. There is no operating point of any of these techniques that VectorPin doesn't catch, because the protocol commits to the actual model output and any deviation is detectable by anyone holding the public key.
 
