@@ -43,9 +43,10 @@ AgentPin enables organizations to issue verifiable cryptographic credentials to 
 
 VectorPin signs a canonical commitment over each embedding's source content hash, model identifier, vector hash, dimension, dtype, and timestamp using Ed25519, so any post-ingestion modification to a stored vector is detectable on read. It closes the steganographic exfiltration channel studied in our VectorSmuggle research and gives RAG operators a tamper-evident audit trail at the retrieval substrate. It answers: *is this embedding what the model actually produced?*
 
+- **Website**: [vectorpin.org](https://vectorpin.org)
 - **Repository**: [github.com/ThirdKeyAI/VectorPin](https://github.com/ThirdKeyAI/VectorPin)
-- **Features**: Ed25519 over SHA-256, canonical floating-point byte form, signed source/model/vector/dim/dtype commitments, cross-language test fixtures, distinct verification outcomes for forgery, tampering, model mismatch, and source drift
-- **Languages**: Python, Rust (JavaScript and Go in progress)
+- **Features**: Ed25519 over SHA-256, canonical floating-point byte form, signed source/model/vector/dim/dtype commitments, cross-language test fixtures, distinct verification outcomes for forgery, tampering, model mismatch, and source drift, alpha adapters for LanceDB, Chroma, Pinecone, and Qdrant
+- **Languages**: Python, Rust, TypeScript (Go in progress)
 - **License**: Apache 2.0
 
 ### Symbiont — Runtime Policy Enforcement
