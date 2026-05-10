@@ -38,7 +38,7 @@ The honest finding has two parts.
 
 First, distribution-shifting techniques have a narrow stealth window. Off-the-shelf anomaly detectors (Isolation Forest, One-Class SVM with an RBF kernel) trained on a clean baseline catch every operating point that meaningfully moves the embedding direction. Noise at sigma = 0.005 already preserves cosine similarity at 0.964 but is detectable by One-Class SVM at AUC 0.796. By sigma = 0.01 both detectors reach AUC 1.000. The good news for defenders: the obvious statistical baseline closes most of the cheap-attack regime.
 
-Second, orthogonal rotation is the structural exception in the small-angle, few-rotation regime. Rotation preserves all pairwise inner products and per-dimension marginal moments by construction, which is exactly the feature surface that distribution-based detectors fit on. Across a 35-point parameter sweep, neither detector exceeded AUC 0.53. The result replicates across four additional embedding models (Nomic, EmbeddingGemma, Snowflake Arctic, MXBai) and across two cross-corpus replications totalling over 26,000 chunks (BEIR NFCorpus and a Quora subset). Rotation AUC stays at chance to three decimal places on every (model, corpus) pair we tested.
+Second, orthogonal rotation is the structural exception in the small-angle, few-rotation regime. Rotation preserves all pairwise inner products and per-dimension marginal moments by construction, which is exactly the feature surface that distribution-based detectors fit on. Across a 35-point parameter sweep on the synthetic-Gaussian baseline, neither detector exceeded AUC 0.53. The result replicates across four additional embedding models (Nomic, EmbeddingGemma, Snowflake Arctic, MXBai) and across two cross-corpus replications totalling over 26,000 chunks (BEIR NFCorpus and a Quora subset). At the small-angle/default setting, rotation AUC stays near chance on every (model, corpus) pair we tested.
 
 | Technique                          | Cos to original | IsoForest AUC | OC-SVM AUC |
 | ---------------------------------- | --------------- | ------------- | ---------- |
@@ -46,7 +46,7 @@ Second, orthogonal rotation is the structural exception in the small-angle, few-
 | Gaussian noise (sigma = 0.01)      | 0.929           | 1.000         | 1.000      |
 | Orthogonal rotation (small angle)  | ~1.00           | ~0.50         | ~0.50      |
 | Orthogonal rotation (35-pt sweep)  | varies          | <= 0.53       | <= 0.53    |
-| Adaptive PGD (L2-budgeted)         | > 0.99          | ~0            | ~0         |
+| Adaptive PGD, L2-budgeted          | >0.99           | ~0            | ~0         |
 
 There's a third wrinkle worth flagging. Against an adaptive attacker with white-box access to the detector, projected-gradient descent within an L2 budget drives both detector AUCs to near-zero while keeping cosine to original above 0.99. Statistical detection is useful as a first filter against casual attackers. It is not a load-bearing security control against attackers who have read the literature.
 
@@ -110,7 +110,7 @@ flowchart TD
     Q4 -- "yes" --> O6["OK"]
 ```
 
-The coverage relative to the studied attacks is structural rather than empirical. Every perturbation technique in the paper modifies the stored vector after the model produced it. Each modification therefore changes `vec_hash` and fails verification. Cross-model fragmentation is caught by the `model` field. There is no operating point of any of these techniques that VectorPin doesn't catch, because the protocol commits to the actual model output and any deviation is detectable by anyone holding the public key.
+The coverage relative to the studied attacks is structural rather than empirical. Every perturbation technique in the paper modifies the stored vector after the model produced it. Each modification therefore changes `vec_hash` and fails verification. Cross-model fragmentation is caught by the `model` field. Under the paper's post-pinning tamper model, there is no operating point of any of these techniques that VectorPin doesn't catch, because the protocol commits to the actual model output and any deviation is detectable by anyone holding the public key.
 
 We use vanilla Ed25519 over SHA-256. The cryptographic primitives are not novel and they aren't supposed to be. The contribution is the canonical byte form for floating-point arrays, the wire-format design, and the cross-language compatibility discipline.
 
