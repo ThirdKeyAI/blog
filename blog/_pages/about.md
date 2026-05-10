@@ -16,7 +16,7 @@ We focus on extending Zero Trust principles to artificial intelligence, applying
 
 ## The ThirdKey Trust Stack
 
-Our core work is a three-layer cryptographic trust architecture for AI agents:
+Our core work is a multi-layer cryptographic trust architecture for AI agents:
 
 ### SchemaPin — Tool Integrity
 **Cryptographic Security for AI Tool Schemas**
@@ -37,6 +37,16 @@ AgentPin enables organizations to issue verifiable cryptographic credentials to 
 - **Features**: ES256 JWTs, domain-anchored discovery, delegation chains, trust bundles, mutual authentication
 - **Languages**: Rust, JavaScript, Python
 - **License**: MIT
+
+### VectorPin — Embedding Integrity
+**Cryptographic Provenance for Vector Embeddings**
+
+VectorPin signs a canonical commitment over each embedding's source content hash, model identifier, vector hash, dimension, dtype, and timestamp using Ed25519, so any post-ingestion modification to a stored vector is detectable on read. It closes the steganographic exfiltration channel studied in our VectorSmuggle research and gives RAG operators a tamper-evident audit trail at the retrieval substrate. It answers: *is this embedding what the model actually produced?*
+
+- **Repository**: [github.com/ThirdKeyAI/VectorPin](https://github.com/ThirdKeyAI/VectorPin)
+- **Features**: Ed25519 over SHA-256, canonical floating-point byte form, signed source/model/vector/dim/dtype commitments, cross-language test fixtures, distinct verification outcomes for forgery, tampering, model mismatch, and source drift
+- **Languages**: Python, Rust (JavaScript and Go in progress)
+- **License**: Apache 2.0
 
 ### Symbiont — Runtime Policy Enforcement
 **AI-Native Agent Framework**
