@@ -83,11 +83,11 @@ The constructive half of the paper is **VectorPin**, a minimal cryptographic pro
 The idea is straightforward. When the embedding service produces a vector, it signs a canonical commitment over the source content hash, the model identifier, the vector hash, the dimension and dtype, a timestamp, the key id, and any operator-provided metadata. The signature is Ed25519 over a deterministic byte form of those fields. Verification on read recomputes the relevant hashes and checks the signature. Any post-embedding modification breaks `vec_hash` and triggers a `VECTOR_TAMPERED` outcome.
 
 ```mermaid!
-flowchart LR
+flowchart TD
     SRC["Source chunk"] --> EMB["Embedding model"]
     EMB --> VEC["Vector v"]
-    VEC --> SIGN["VectorPin sign<br/>(Ed25519 over canonical bytes)"]
-    SRC -.-> SIGN
+    VEC --> SIGN["VectorPin sign<br/>Ed25519 over canonical bytes"]
+    SRC -. src_hash .-> SIGN
     SIGN --> STORE[("Vector DB<br/>+ pin metadata")]
     STORE --> READ["Read time"]
     READ --> VERIFY["VectorPin verify"]
