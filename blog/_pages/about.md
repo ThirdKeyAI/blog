@@ -57,7 +57,7 @@ Symbiont is a framework for building autonomous, policy-aware agents that can sa
 - **Website**: [symbiont.dev](https://symbiont.dev)
 - **Features**: DSL for agent definitions, HTTP API, cron scheduling, channel adapters, MCP integration
 - **Languages**: Rust
-- **License**: MIT
+- **License**: Apache 2.0
 
 ## Security Research
 

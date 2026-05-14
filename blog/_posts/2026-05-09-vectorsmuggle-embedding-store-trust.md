@@ -14,7 +14,7 @@ tags: [vector databases, embeddings, rag security, steganography, provenance, ve
 
 We're publishing **VectorSmuggle: Steganographic Exfiltration in Embedding Stores and a Cryptographic Provenance Defense**, a new ThirdKey Research preprint on a layer of AI infrastructure that has quietly become security-sensitive without quite being treated that way.
 
-Paper: [https://doi.org/10.5281/zenodo.20058255](https://doi.org/10.5281/zenodo.20058255)
+Paper: [https://doi.org/10.5281/zenodo.20058255](https://doi.org/10.5281/zenodo.20058255) &middot; [arXiv:2605.13764](https://arxiv.org/abs/2605.13764)
 
 The short version is that vector embeddings have become load-bearing in modern AI systems, but production vector databases ship no native controls for verifying that an embedding hasn't been modified after the model produced it. The paper studies what an attacker can do with that gap, and what it takes to close it.
 
@@ -146,7 +146,7 @@ What we'd like to see next is one of the major vector database vendors shipping 
 
 Embedding integrity should be a normal part of secure RAG architecture. Today it isn't. That gap is closeable, the closure is cheap, and the work is sitting on GitHub.
 
-Paper: [https://doi.org/10.5281/zenodo.20058255](https://doi.org/10.5281/zenodo.20058255)
+Paper: [https://doi.org/10.5281/zenodo.20058255](https://doi.org/10.5281/zenodo.20058255) &middot; [arXiv:2605.13764](https://arxiv.org/abs/2605.13764)
 
 VectorPin: [vectorpin.org](https://vectorpin.org) &middot; [github.com/ThirdKeyAI/VectorPin](https://github.com/ThirdKeyAI/VectorPin)
 
