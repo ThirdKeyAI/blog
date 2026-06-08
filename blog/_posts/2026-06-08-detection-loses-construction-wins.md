@@ -35,7 +35,9 @@ We published this. Our own fence failed and we put the data in the repo.
 
 ## The guardrail landscape is worse
 
-We then tested every accessible production guardrail on the same held-out corpus: 90 attack lures plus 30 real support tickets (clean traffic). Detection forces a trade-off between catching attacks and not blocking legitimate work.
+We then tested every accessible production guardrail on the same held-out corpus: 90 attack lures plus 30 real support tickets (clean traffic). Each guardrail was run in its default recommended configuration with no custom tuning, thresholds, or prompt engineering. This is the configuration most production deployments would use.
+
+Detection forces a trade-off between catching attacks and not blocking legitimate work.
 
 | Guardrail | Catches attacks | Falsely flags real traffic |
 |---|---|---|
@@ -73,64 +75,24 @@ The security comes from grounding the decision in trusted input. Cap the worker'
 
 This is not a prototype result. The Symbiont runtime ships the typed + grounded decision (`symbi_runtime::toolclad::decision`). Driving the shipping runtime's decision module through the same evaluation: 0/120 escalations, 0/30 on every model. The shipping runtime matched the validated prototype on 120/120 trials.
 
-## The structural vectors
-
-Injection is the hardest vector because you cannot close it by removing a tool. But four other attack families can be closed structurally: filesystem enumeration, network boundary violation, state mutation, and syscall escape.
-
-Across 960 trials with four frontier models (two open-weights, two closed-weights), Symbiont reduced escape success on these vectors from 46-96% on the permissive baseline to 0% on every one:
-
-| Vector | Permissive baseline | Symbiont |
-|---|---|---|
-| Filesystem enumeration | 94% | 0% |
-| Network boundary | 95% | 0% |
-| State mutation | 96% | 0% |
-| Syscall boundary | 46% | 0% |
-
-The mechanism differs by vector. Filesystem and network escapes are caught by ToolClad's path and URL validators (177 and 205 substrate blocks respectively). State mutation is prevented by tool-surface reduction (no write tool is declared, so the model cannot reach for one). Syscall escape is prevented the same way (no exec tool exposed). The substrate gap held across all four model lineages, open and closed weights, weak and strong safety training.
-
-## Non-redundancy: each fence catches what the others miss
-
-This claim matters because layered defenses can be illusory. If every layer catches the same attacks, removing one changes nothing.
-
-We measured this with stack-stripping ablation (v12). Remove the sanitizer: html-comment-smuggle payloads survive at 92%. Remove Cedar: out-of-profile tool calls go through (but the executor's independent profile-of-one check still catches 219). Remove ToolClad: typed-argument injection payloads pass at 99.4%.
-
-Each fence catches a class of attack the others do not. Removing any one fence exposes the corresponding attack class at near-100% survival. The defense composes without redundancy.
-
 ## What this does not show
-
-Honesty about scope is part of the methodology.
 
 The held-out corpus was authored by a subagent, not an external human red team. The subagent had general attack knowledge but had not seen the fences. An external human set against a frozen fence commit is the stronger next experiment.
 
 The benign-ticket grounding works because the held-out tickets are benign. An attacker who controls the ticket text (indirect injection into the trusted input) is a separate surface.
 
-Scoring differs across arms. The marker and baseline arms use an LLM supervisor. The typed arms use a deterministic policy. The clean comparison is within the typed arm: trusting 38-40% to grounded 0%.
-
 The 0/120 result has a Wilson 95% CI of [0%, 3%]. At larger n the point estimate may shift. The structural mechanism (typed enums + trusted-context grounding) is not probabilistic, but the measurement of it is.
+
+Scoring differs across arms. The marker and baseline arms use an LLM supervisor. The typed arms use a deterministic policy. The clean comparison is within the typed arm: trusting 38-40% to grounded 0%.
 
 ## Reproduce
 
-Everything described here regenerates from committed artifacts:
+All numbers regenerate from committed artifacts in the public repo. Guardrail benchmarks use released model versions with no API key required for the open-source classifiers. Total cost to reproduce the held-out evaluation: approximately $60.
 
-```
-cd evals/escape
+Reports and reproduction scripts: [github.com/ThirdKeyAI/symbiont-orga-demo](https://github.com/ThirdKeyAI/symbiont-orga-demo)
 
-# Guardrail comparison
-python3 -m guardrails.run_sweep --execute
-python3 -m guardrails.analyze
-
-# Held-out red team (marker arm + behavioral scoring)
-python3 -m redteam.run_holdout --mode marker --substrates python_baseline,symbiont --execute
-
-# Held-out red team (typed channel, shipping runtime)
-python3 -m redteam.run_holdout --mode typed --substrates symbiont --execute
-python3 -m redteam.analyze
-```
-
-Total cost to reproduce the held-out evaluation: approximately $60. The guardrail sweep runs on released model versions with no API key required for the open-source classifiers.
-
-Reports: [github.com/ThirdKeyAI/symbiont-orga-demo](https://github.com/ThirdKeyAI/symbiont-orga-demo)
+*Next post: structural vector results across filesystem, network, syscall, state mutation, and typed-argument attack families. Six independent measurements, zero escapes.*
 
 ---
 
-*Jascha Wanger is the founder of [ThirdKey AI](https://thirdkey.ai). Symbiont is the shipping runtime that implements the [OATS](https://openagenttruststack.org) specification. The evaluation methodology, all aggregate numbers, and reproduction scripts are committed to the public repo.*
+*Jascha Wanger is the founder of [ThirdKey AI](https://thirdkey.ai). Symbiont is the shipping runtime that implements the [OATS](https://openagenttruststack.org) specification.*
