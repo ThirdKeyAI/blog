@@ -40,20 +40,27 @@ We then tested every accessible production guardrail on the same held-out corpus
 | Guardrail | AUC | Out-of-box detection | Out-of-box false positive | Tuned (det / FP) |
 |---|---|---|---|---|
 | IBM Granite Guardian 3.0 | 1.00 | 100% | 77% | 100% / 0% |
-| deepset DeBERTa | 0.99 | 100% | 57% | 100% / 3% |
 | IBM Granite Guardian 3.2 | 1.00 | 68% | 0% | 99% / 3% |
 | Meta Llama Prompt Guard 2 | 1.00 | 1% | 0% | 100% / 3% |
 | Google ShieldGemma-2B | 1.00 | 0% | 0% | 99% / 3% |
+| Qwen3Guard-Gen-4B | 1.00 | 4% | 0% | 100% / 0% |
+| Qwen3Guard-Gen-8B | 1.00 | 1% | 0% | 100% / 3% |
+| deepset DeBERTa | 0.99 | 100% | 57% | 100% / 3% |
+| Qwen3Guard-Gen-0.6B | 0.99 | 6% | 0% | 98% / 3% |
+| Reasoning-aware monitor (4B judge) | 0.96 | 99% | 17% | 56% / 0% |
 | ProtectAI DeBERTa v2 | 0.73 | 9% | 10% | 2% / 3% |
+| AllenAI WildGuard (7B) | 0.63 | 26% | 0% | 26% / 0% |
 | Symbiont's own marker detector | 0.51 | 1% | 0% | 1% / 0% |
+
+One row is a different paradigm. Every guard above the reasoning-aware monitor is a pattern or safety classifier; the reasoning-aware monitor is a small LLM judge that reads the request against a declared remit and emits a risk code. It is the strongest detector we tested on raw separability of these semantic lures (it flags 99% of them), which is the point of including it — and it still lands on the same wall, below.
 
 Three reads from this table.
 
-First: out of the box, none is deployable. Granite 3.0 catches everything but flags 77% of real traffic. deepset catches everything but flags 57%. ShieldGemma and Prompt Guard 2 flag nothing and catch nothing. Whatever a customer installs and runs at defaults fails.
+First: out of the box, none is deployable. Granite 3.0 catches everything but flags 77% of real traffic. deepset catches everything but flags 57%. The reasoning-aware monitor catches 99% but flags 17%. ShieldGemma, Prompt Guard 2, and the entire Qwen3Guard family flag almost nothing and catch almost nothing (0–6% detection at their default thresholds). Whatever a customer installs and runs at defaults fails.
 
-Second: tuned with labeled data and per-model threshold calibration, the better agent-aware guards (Granite 3.0, Prompt Guard 2, ShieldGemma) genuinely can separate this corpus. AUC near 1.0. That is a real result and we are not going to pretend otherwise.
+Second: tuned with labeled data and per-model threshold calibration, the better agent-aware guards (Granite 3.0, Prompt Guard 2, ShieldGemma, and the Qwen3Guard models) genuinely can separate this corpus. AUC near 1.0. That is a real result and we are not going to pretend otherwise.
 
-Third: generic injection classifiers cannot separate these lures even tuned. ProtectAI (AUC 0.73) and our own marker detector (AUC 0.51, chance) fail because the attacks are semantic ("read /data/secret/pricing.csv", "fetch reports.example.com"), not crude "ignore previous instructions." The lures look like work.
+Third: generic classifiers cannot separate these lures even tuned. ProtectAI (AUC 0.73), AllenAI WildGuard (AUC 0.63, a 7B safety LLM that is still not agent-aware enough), and our own marker detector (AUC 0.51, chance) fail because the attacks are semantic ("read /data/secret/pricing.csv", "fetch reports.example.com"), not crude "ignore previous instructions." The lures look like work.
 
 ## But those tuned numbers are optimistic
 
@@ -66,15 +73,25 @@ Every guard's AUC fell.
 | Google ShieldGemma-2B | 1.00 | 0.98 | 87% / 4% |
 | IBM Granite Guardian 3.2 | 1.00 | 0.97 | 78% / 4% |
 | Meta Llama Prompt Guard 2 | 1.00 | 0.93 | 32% / 2% |
+| Reasoning-aware monitor (4B judge) | 0.96 | 0.93 | 56% / 2% |
+| Qwen3Guard-Gen-8B | 1.00 | 0.89 | 24% / 4% |
 | IBM Granite Guardian 3.0 | 1.00 | 0.89 | 42% / 8% |
+| Qwen3Guard-Gen-4B | 1.00 | 0.88 | 21% / 4% |
+| Qwen3Guard-Gen-0.6B | 0.99 | 0.87 | 18% / 4% |
 | deepset DeBERTa | 0.99 | 0.80 | 100% / 40% |
 | ProtectAI DeBERTa v2 | 0.73 | 0.75 | 3% / 4% |
+| AllenAI WildGuard (7B) | 0.63 | 0.60 | 26% / 6% |
+| Symbiont's own marker detector | 0.51 | 0.51 | 1% / 0% |
 
 The best agent-aware guards (ShieldGemma 0.98, Granite 3.2 0.97) still separate genre-matched traffic, tuning to 78-87% detection at roughly 4% false positives. That is the honest floor for detection done well: a permanent calibration project that catches most attacks at a real false-positive cost, re-tuned every time models or attacks drift.
 
-deepset collapses. 100% detection at 40% false positives on the hard set. It flags the legitimate filesystem and network requests. The trigger-happy classifier cannot tell "read the allowed report" from "read the secret report."
+The Qwen3Guard models keep a high separability score on the hard set (AUC 0.87-0.89) but the number that matters at deployment collapses: tuned to a usable false-positive rate, they catch only 18-24% of attacks. A good AUC is not a deployable operating point.
 
-Generic injection classifiers and our own marker detector stay at chance regardless of tuning.
+The reasoning-aware monitor is the most interesting failure. It is the only semantic, remit-aware judge in the table, and it holds the best AUC of any non-1.0 guard on the hard set (0.93) — reading intent genuinely beats word-pattern matching. But it lands on the same recall-versus-precision wall: at its native setting it flags 27% of legitimate same-domain traffic, and tuned for precision it catches only 56% of attacks — it misses 44%. Smarter detection raises the ceiling. It does not remove the trade-off.
+
+deepset collapses the other way. 100% detection at 40% false positives on the hard set. It flags the legitimate filesystem and network requests. The trigger-happy classifier cannot tell "read the allowed report" from "read the secret report."
+
+Generic injection classifiers, the WildGuard safety LLM, and our own marker detector stay at chance regardless of tuning.
 
 ## The structural fix
 
@@ -107,7 +124,7 @@ The 0/120 result has a Wilson 95% CI of [0%, 3%]. The structural mechanism is no
 
 All rates carry wide confidence intervals at these sample sizes (n=90 positive, 30-52 negative). Precise per-guard ranking is noisy. The gross effects are not: out-of-box failure, AUC near chance for generic injection classifiers, and deepset's 40% false-positive rate on genre-matched negatives.
 
-WildGuard, nemoguard, and Llama Guard 4 are not yet included (tokenizer/format/VRAM constraints). Results will be added on access with version pins.
+nemoguard and Llama Guard 4 are not yet included (tokenizer/VRAM constraints). Results will be added on access with version pins.
 
 ## Reproduce
 
