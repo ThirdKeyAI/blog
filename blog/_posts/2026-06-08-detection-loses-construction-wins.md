@@ -50,13 +50,14 @@ We then tested every accessible production guardrail on the same held-out corpus
 | Reasoning-aware monitor (4B judge) | 0.96 | 99% | 17% | 56% / 0% |
 | ProtectAI DeBERTa v2 | 0.73 | 9% | 10% | 2% / 3% |
 | AllenAI WildGuard (7B) | 0.63 | 26% | 0% | 26% / 0% |
+| Meta LlamaFirewall (AlignmentCheck) | 0.63 | 43% | 17% | n/a (binary) |
 | Symbiont's own marker detector | 0.51 | 1% | 0% | 1% / 0% |
 
-One row is a different paradigm. Every guard above the reasoning-aware monitor is a pattern or safety classifier; the reasoning-aware monitor is a small LLM judge that reads the request against a declared remit and emits a risk code. It is the strongest detector we tested on raw separability of these semantic lures (it flags 99% of them), which is the point of including it — and it still lands on the same wall, below.
+Two rows are a different paradigm. Every other guard is a pattern or safety classifier; these two are reasoning-aware judges — a small LLM reads the request against a declared remit and decides whether it stays in scope. They bracket the range. The 4B judge is the strongest detector we tested on raw separability of these semantic lures, flagging 99% of them. Meta's production LlamaFirewall framework, run through its AlignmentCheck auditor, catches just 43% — and its verdict is binary, so there is no threshold to tune. Reading intent can beat pattern-matching, but the implementation gap is wide and, as the next section shows, neither reaches a deployable operating point.
 
 Three reads from this table.
 
-First: out of the box, none is deployable. Granite 3.0 catches everything but flags 77% of real traffic. deepset catches everything but flags 57%. The reasoning-aware monitor catches 99% but flags 17%. ShieldGemma, Prompt Guard 2, and the entire Qwen3Guard family flag almost nothing and catch almost nothing (0–6% detection at their default thresholds). Whatever a customer installs and runs at defaults fails.
+First: out of the box, none is deployable. Granite 3.0 catches everything but flags 77% of real traffic. deepset catches everything but flags 57%. The 4B reasoning-aware monitor catches 99% but flags 17%. Meta's LlamaFirewall catches 43% and flags 17%, with no threshold to move. ShieldGemma, Prompt Guard 2, and the entire Qwen3Guard family flag almost nothing and catch almost nothing (0–6% detection at their default thresholds). Whatever a customer installs and runs at defaults fails.
 
 Second: tuned with labeled data and per-model threshold calibration, the better agent-aware guards (Granite 3.0, Prompt Guard 2, ShieldGemma, and the Qwen3Guard models) genuinely can separate this corpus. AUC near 1.0. That is a real result and we are not going to pretend otherwise.
 
@@ -81,13 +82,14 @@ Every guard's AUC fell.
 | deepset DeBERTa | 0.99 | 0.80 | 100% / 40% |
 | ProtectAI DeBERTa v2 | 0.73 | 0.75 | 3% / 4% |
 | AllenAI WildGuard (7B) | 0.63 | 0.60 | 26% / 6% |
+| Meta LlamaFirewall (AlignmentCheck) | 0.63 | 0.63 | 43% / 17% |
 | Symbiont's own marker detector | 0.51 | 0.51 | 1% / 0% |
 
 The best agent-aware guards (ShieldGemma 0.98, Granite 3.2 0.97) still separate genre-matched traffic, tuning to 78-87% detection at roughly 4% false positives. That is the honest floor for detection done well: a permanent calibration project that catches most attacks at a real false-positive cost, re-tuned every time models or attacks drift.
 
 The Qwen3Guard models keep a high separability score on the hard set (AUC 0.87-0.89) but the number that matters at deployment collapses: tuned to a usable false-positive rate, they catch only 18-24% of attacks. A good AUC is not a deployable operating point.
 
-The reasoning-aware monitor is the most interesting failure. It is the only semantic, remit-aware judge in the table, and it holds the best AUC of any non-1.0 guard on the hard set (0.93) — reading intent genuinely beats word-pattern matching. But it lands on the same recall-versus-precision wall: at its native setting it flags 27% of legitimate same-domain traffic, and tuned for precision it catches only 56% of attacks — it misses 44%. Smarter detection raises the ceiling. It does not remove the trade-off.
+The reasoning-aware judges are the most interesting failure. The 4B monitor holds the best AUC of any non-1.0 guard on the hard set (0.93) — reading intent genuinely beats word-pattern matching. But it lands on the recall-versus-precision wall: at its native setting it flags 27% of legitimate same-domain traffic, and tuned for precision it catches only 56% of attacks — it misses 44%. Meta's production LlamaFirewall reaches the same wall from the other side: a fixed binary verdict that catches 43% of attacks at 17% false positives, AUC 0.63, with no knob to turn. Two reasoning-aware monitors, an implementation gap of 0.30 AUC between them, and neither reaches the corner. Smarter detection raises the ceiling. It does not remove the trade-off.
 
 deepset collapses the other way. 100% detection at 40% false positives on the hard set. It flags the legitimate filesystem and network requests. The trigger-happy classifier cannot tell "read the allowed report" from "read the secret report."
 
